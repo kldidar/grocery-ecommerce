@@ -1,0 +1,11 @@
+[project]
+name = "food-ecommerce-backend"
+version = "0.1.0"
+description = "Production-ready backend for a food e-commerce platform."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django~=6.1",
+    "psycopg[binary]~=3.2",
+    "pydantic-settings~=2.9",
+]
