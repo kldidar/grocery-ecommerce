@@ -2,4 +2,4 @@ from .base import *  # noqa: F401, F403
 
 DEBUG = False
 
-ALLOWED_HOSTS.clear() # noqa: F405
+ALLOWED_HOSTS.clear()  # noqa: F405
