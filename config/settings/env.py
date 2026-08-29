@@ -25,4 +25,4 @@ class EnvSettings(BaseSettings):
     redis_url: str = "redis://redis:6379/0"
 
 
-env = EnvSettings()
+env = EnvSettings()  # type: ignore[call-arg]
