@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Keep this in sync with the `ruff` version pinned in pyproject.toml —
+    # pre-commit runs hooks in its own isolated environment, independent
+    # of the project's uv-managed .venv.
+    rev: v0.16.5
+    hooks:
+      # Run the linter first, with autofix enabled.
+      - id: ruff-check
+        args: [--fix]
+      # Then run the formatter.
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
