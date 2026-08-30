@@ -2,26 +2,50 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
+
+env:
+  DJANGO_SECRET_KEY: ci-placeholder-secret-key
+  DJANGO_DEBUG: "False"
+  POSTGRES_DB: ci
+  POSTGRES_USER: ci
+  POSTGRES_PASSWORD: ci
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: "5432"
+  REDIS_URL: redis://localhost:6379/0
 
 jobs:
   quality:
     name: Code quality
     runs-on: ubuntu-latest
-    # Placeholder values sufficient for static analysis only. mypy's
-    # django-stubs plugin imports the settings module to introspect models,
-    # which requires these variables to be present and well-formed — see
-    # the architecture note above. None of these are real credentials.
-    env:
-      DJANGO_SECRET_KEY: ci-placeholder-secret-key
-      DJANGO_DEBUG: "False"
-      POSTGRES_DB: ci
-      POSTGRES_USER: ci
-      POSTGRES_PASSWORD: ci
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: "5432"
-      REDIS_URL: redis://localhost:6379/0
+
+    services:
+      postgres:
+        image: postgres:17.11
+        env:
+          POSTGRES_DB: ci
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -45,3 +69,9 @@ jobs:
 
       - name: Run Bandit
         run: uv run bandit -c pyproject.toml -r .
+
+      - name: Run tests with coverage
+        run: uv run coverage run -m pytest
+
+      - name: Generate coverage report
+        run: uv run coverage report

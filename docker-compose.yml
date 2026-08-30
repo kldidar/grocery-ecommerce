@@ -1,22 +1,29 @@
 services:
   db:
-    image: postgres:18
+    image: postgres:17.11
+
     env_file:
       - .env
+
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
     ports:
       - "5432:5432"
+
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 5s
 
   redis:
     image: redis:8-alpine
+
     ports:
       - "6379:6379"
+
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -25,22 +32,47 @@ services:
 
   web:
     build: .
+
     command: uv run python manage.py runserver 0.0.0.0:8000
+
     volumes:
       - .:/app
-      # Anonymous volume: keeps the host's (irrelevant, possibly
-      # platform-mismatched) .venv out of the container's view of /app.
-      # The image already provides its own environment at /venv.
       - /app/.venv
+
     ports:
       - "8000:8000"
+
     env_file:
       - .env
+
     depends_on:
       db:
         condition: service_healthy
       redis:
         condition: service_healthy
+
+  test:
+    build: .
+
+    command: >
+      sh -c "
+        uv run coverage run -m pytest &&
+        uv run coverage report
+      "
+
+    volumes:
+      - .:/app
+      - /app/.venv
+
+    env_file:
+      - .env
+
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 
 volumes:
   postgres_data:
