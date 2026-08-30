@@ -1,6 +1,6 @@
-# Food E-Commerce Backend
+# Grocery E-Commerce Backend
 
-Production-ready backend for a food e-commerce platform, built with Django.
+Production-ready backend for a grocery e-commerce platform, built with Django.
 
 ## Status
 🚧 Under active development. Stage 0 — environment setup.
