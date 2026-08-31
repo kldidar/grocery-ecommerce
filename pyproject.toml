@@ -9,6 +9,8 @@ dependencies = [
     "django-filter>=26.1",
     "django-stubs-ext>=6.1.0",
     "djangorestframework~=3.17",
+    "drf-spectacular~=0.30",
+    "drf-spectacular-sidecar>=2026.8.1",
     "psycopg[binary]~=3.2",
     "pydantic-settings~=2.9",
 ]

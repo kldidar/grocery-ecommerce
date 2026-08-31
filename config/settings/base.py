@@ -33,6 +33,8 @@ INSTALLED_APPS = [
     # Third-party applications
     "rest_framework",
     "django_filters",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
 ]
 
 MIDDLEWARE = [
@@ -144,4 +146,20 @@ REST_FRAMEWORK = {
         "rest_framework.filters.SearchFilter",
         "rest_framework.filters.OrderingFilter",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Food E-Commerce Backend API",
+    "DESCRIPTION": "Production-ready backend for a food e-commerce platform.",
+    "VERSION": "1.0.0",
+    # Excludes the schema view's own (trivial) schema from the generated
+    # output — a commonly recommended setting to avoid recursive noise.
+    "SERVE_INCLUDE_SCHEMA": False,
+    # Serve Swagger UI / ReDoc assets from drf-spectacular-sidecar instead
+    # of an external CDN.
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
 }
