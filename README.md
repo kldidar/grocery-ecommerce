@@ -98,3 +98,26 @@ uv run bandit -c pyproject.toml -r .   # security
 
 Significant, non-obvious technical decisions are recorded as they are
 made in [`DECISIONS.md`](DECISIONS.md).
+
+## Authentication
+
+JWT (access + refresh tokens):
+
+```bash
+# Obtain a token pair
+curl -X POST http://localhost:8000/api/v1/auth/token/ \
+  -d "email=you@example.com&password=yourpassword"
+
+# Use the access token
+curl http://localhost:8000/api/v1/users/me/ \
+  -H "Authorization: Bearer <access token>"
+
+# Refresh
+curl -X POST http://localhost:8000/api/v1/auth/token/refresh/ \
+  -d "refresh=<refresh token>"
+```
+
+Access tokens are valid for 15 minutes, refresh tokens for 7 days, with
+rotation and blacklisting enabled (see `DECISIONS.md` for anything not
+covered here). All endpoints require authentication by default except
+`/api/health/` and `/api/v1/health/`.
