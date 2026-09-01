@@ -25,7 +25,7 @@ dev = [
     "pytest>=9.1.1",
     "pytest-django>=4.14.0",
     "coverage[toml]>=7.16.0",
-    "djangorestframework-stubs>=3.18.1",
+    "djangorestframework-stubs[compatible-mypy]>=3.18.1",
 ]
 
 [tool.ruff]
@@ -54,8 +54,9 @@ ignore = [
 known-first-party = ["apps", "config"]
 
 [tool.ruff.lint.per-file-ignores]
-"**/migrations/*.py" = ["E501"]
-"**/tests/*.py" = ["S101"]
+"**/migrations/*.py" = ["E501", "I001"]
+"**/tests/*.py" = ["S101", "S105", "S106"]
+"apps/users/models.py" = ["ANN401"]
 
 [tool.ruff.format]
 quote-style = "double"

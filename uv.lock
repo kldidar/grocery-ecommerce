@@ -323,6 +323,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/f7/1c/e266828fe2b78484651667976f8539e47b4e511a266424b890f613c6b7ad/djangorestframework_stubs-3.18.1-py3-none-any.whl", hash = "sha256:a2021f45f7759b493504c2a721f112ec4fd677753590c1ba346f4ebfb49a7f03", size = 55685, upload-time = "2026-08-25T22:49:26.178Z" },
 ]
 
+[package.optional-dependencies]
+compatible-mypy = [
+    { name = "django-stubs", extra = ["compatible-mypy"] },
+    { name = "mypy" },
+]
+
 [[package]]
 name = "drf-spectacular"
 version = "0.30.0"
@@ -381,7 +387,7 @@ dev = [
     { name = "bandit" },
     { name = "coverage" },
     { name = "django-stubs", extra = ["compatible-mypy"] },
-    { name = "djangorestframework-stubs" },
+    { name = "djangorestframework-stubs", extra = ["compatible-mypy"] },
     { name = "mypy" },
     { name = "pre-commit" },
     { name = "pytest" },
@@ -406,7 +412,7 @@ dev = [
     { name = "bandit", extras = ["toml"] },
     { name = "coverage", extras = ["toml"], specifier = ">=7.16.0" },
     { name = "django-stubs", extras = ["compatible-mypy"] },
-    { name = "djangorestframework-stubs", specifier = ">=3.18.1" },
+    { name = "djangorestframework-stubs", extras = ["compatible-mypy"], specifier = ">=3.18.1" },
     { name = "mypy" },
     { name = "pre-commit", specifier = ">=4.6.2" },
     { name = "pytest", specifier = ">=9.1.1" },
