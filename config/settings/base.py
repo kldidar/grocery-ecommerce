@@ -191,3 +191,36 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_RESULT_EXPIRES = 60 * 60 * 24
+CELERY_TASK_TIME_LIMIT = 300
+CELERY_TASK_SOFT_TIME_LIMIT = 240
+CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{asctime} {levelname} {name} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "celery": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        # Catches every apps.<name>.<module> logger (e.g.
+        # apps.notifications.tasks) through Python's standard logger
+        # name hierarchy — individual apps do not need their own entry.
+        "apps": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}
