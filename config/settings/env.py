@@ -24,5 +24,9 @@ class EnvSettings(BaseSettings):
     # Redis
     redis_url: str = "redis://redis:6379/0"
 
+    # Celery
+    celery_broker_url: str = "redis://redis:6379/1"
+    celery_result_backend: str = "redis://redis:6379/1"
+
 
 env = EnvSettings()  # type: ignore[call-arg]

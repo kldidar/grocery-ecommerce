@@ -83,6 +83,19 @@ Runs the suite via pytest with coverage measured through `coverage`
 (configuration in `pyproject.toml`). Target: 90% by project completion —
 see `DECISIONS.md`, ADR-001.
 
+## Background tasks
+
+Celery, with Redis as broker and result backend:
+
+```bash
+docker compose up -d          # includes a dedicated `worker` service
+docker compose logs worker    # observe task execution
+```
+
+Currently implemented: asynchronous email delivery
+(`apps.notifications.services.NotificationService`). Use this service
+rather than calling the underlying Celery task directly.
+
 ## Code quality
 
 Enforced locally (pre-commit) and in CI (GitHub Actions):
