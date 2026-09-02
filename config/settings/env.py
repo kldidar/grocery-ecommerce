@@ -28,5 +28,7 @@ class EnvSettings(BaseSettings):
     celery_broker_url: str = "redis://redis:6379/1"
     celery_result_backend: str = "redis://redis:6379/1"
 
+    default_from_email: str = "noreply@example.com"
+
 
 env = EnvSettings()  # type: ignore[call-arg]

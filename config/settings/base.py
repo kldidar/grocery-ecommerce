@@ -133,6 +133,8 @@ MAILERS = {
     },
 }
 
+DEFAULT_FROM_EMAIL = env.default_from_email
+
 
 AUTH_USER_MODEL = "users.User"
 
@@ -179,6 +181,8 @@ SPECTACULAR_SETTINGS = {
     "REDOC_DIST": "SIDECAR",
 }
 
+
+# Celery
 
 CELERY_BROKER_URL = env.celery_broker_url
 CELERY_RESULT_BACKEND = env.celery_result_backend
