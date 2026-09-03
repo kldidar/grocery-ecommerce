@@ -9,12 +9,19 @@ on:
 env:
   DJANGO_SECRET_KEY: ci-placeholder-secret-key
   DJANGO_DEBUG: "False"
+
   POSTGRES_DB: ci
   POSTGRES_USER: ci
   POSTGRES_PASSWORD: ci
   POSTGRES_HOST: localhost
   POSTGRES_PORT: "5432"
+
   REDIS_URL: redis://localhost:6379/0
+
+  MINIO_ROOT_USER: minioadmin
+  MINIO_ROOT_PASSWORD: ci-minio-password
+  MINIO_BUCKET_NAME: media
+  MINIO_ENDPOINT_URL: http://localhost:9000
 
 jobs:
   quality:
@@ -46,6 +53,21 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      minio:
+        image: quay.io/minio/minio:latest
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: ci-minio-password
+        ports:
+          - 9000:9000
+          - 9001:9001
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        command: server /data --console-address ":9001"
+
     steps:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -57,6 +79,16 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
+
+      - name: Create MinIO bucket
+        run: |
+          docker run --rm \
+            --network host \
+            quay.io/minio/mc:latest \
+            sh -c '
+              mc alias set local http://127.0.0.1:9000 minioadmin ci-minio-password &&
+              mc mb --ignore-existing local/media
+            '
 
       - name: Run Ruff (lint)
         run: uv run ruff check .
