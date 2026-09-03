@@ -72,6 +72,15 @@ With the stack running:
 
 All versioned business endpoints live under `/api/v1/`.
 
+Errors follow a single shape across the entire API:
+
+```json
+{"error": {"code": "not_authenticated", "message": "...", "details": null}}
+```
+
+Every response also carries an `X-Request-ID` header, useful for
+correlating a specific request with its log entries.
+
 ## Testing
 
 ```bash
