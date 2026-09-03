@@ -84,8 +84,9 @@ jobs:
         run: |
           docker run --rm \
             --network host \
+            --entrypoint /bin/sh \
             quay.io/minio/mc:latest \
-            sh -c '
+            -c '
               mc alias set local http://127.0.0.1:9000 minioadmin ci-minio-password &&
               mc mb --ignore-existing local/media
             '
