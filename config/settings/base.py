@@ -1,5 +1,6 @@
 from datetime import timedelta
 from pathlib import Path
+from typing import Any
 
 from .env import env
 
@@ -196,31 +197,37 @@ CELERY_TASK_SOFT_TIME_LIMIT = 240
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 100
 
 
-LOGGING = {
+LOGGING: dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "request_id": {"()": "apps.common.logging.RequestIDFilter"},
+    },
     "formatters": {
         "verbose": {
-            "format": "{asctime} {levelname} {name} {message}",
+            "format": "{asctime} {levelname} {name} [{request_id}] {message}",
             "style": "{",
+        },
+        "json": {
+            "()": "pythonjsonlogger.json.JsonFormatter",
+            "format": "%(asctime)s %(levelname)s %(name)s %(request_id)s %(message)s",
         },
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            # Overridden to "json" in production.py; human-readable here
+            # for local development.
             "formatter": "verbose",
+            "filters": ["request_id"],
         },
     },
-    "root": {
-        "handlers": ["console"],
-        "level": "INFO",
-    },
+    "root": {"handlers": ["console"], "level": "INFO"},
     "loggers": {
         "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
         "celery": {"handlers": ["console"], "level": "INFO", "propagate": False},
-        # Catches every apps.<name>.<module> logger (e.g.
-        # apps.notifications.tasks) through Python's standard logger
-        # name hierarchy — individual apps do not need their own entry.
+        # Catches every apps.<name>.<module> logger through Python's
+        # standard logger name hierarchy.
         "apps": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
 }

@@ -1,3 +1,5 @@
+import secrets
+
 import pytest
 from django.conf import LazySettings
 from rest_framework.test import APIClient
@@ -13,16 +15,18 @@ def _celery_eager(settings: LazySettings) -> None:
 
 @pytest.fixture
 def authenticated_client(db: None) -> tuple[APIClient, User]:
+    password = secrets.token_urlsafe(16)
+
     user = User.objects.create_user(
         email="shopper@example.com",
-        password="correct-pass",  # noqa: S106
+        password=password,
     )
 
     client = APIClient()
 
     tokens = client.post(
         "/api/v1/auth/token/",
-        {"email": user.email, "password": "correct-pass"},
+        {"email": user.email, "password": password},
     )
 
     client.credentials(
