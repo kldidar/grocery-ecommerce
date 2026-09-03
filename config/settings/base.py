@@ -224,3 +224,22 @@ LOGGING = {
         "apps": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
 }
+
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+AWS_ACCESS_KEY_ID = env.minio_root_user
+AWS_SECRET_ACCESS_KEY = env.minio_root_password
+AWS_STORAGE_BUCKET_NAME = env.minio_bucket_name
+AWS_S3_ENDPOINT_URL = env.minio_endpoint_url
+AWS_S3_USE_SSL = False
+AWS_S3_ADDRESSING_STYLE = "path"
+AWS_QUERYSTRING_AUTH = False
+AWS_S3_FILE_OVERWRITE = False

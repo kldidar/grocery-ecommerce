@@ -30,5 +30,11 @@ class EnvSettings(BaseSettings):
 
     default_from_email: str = "noreply@example.com"
 
+    # Minio
+    minio_root_user: str
+    minio_root_password: str
+    minio_bucket_name: str = "media"
+    minio_endpoint_url: str = "http://minio:9000"
+
 
 env = EnvSettings()  # type: ignore[call-arg]

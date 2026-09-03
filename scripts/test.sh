@@ -2,4 +2,4 @@
 
 set -euo pipefail
 
-docker compose run --rm test
+docker compose run --rm test "$@"
