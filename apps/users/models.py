@@ -6,6 +6,7 @@ from django.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 
 from apps.common.models import BaseModel
+from apps.common.validators import validate_image_file
 
 
 class UserManager(BaseUserManager["User"]):
@@ -54,7 +55,12 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=150, blank=True)
     last_name = models.CharField(max_length=150, blank=True)
-    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        blank=True,
+        null=True,
+        validators=[validate_image_file],
+    )
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 

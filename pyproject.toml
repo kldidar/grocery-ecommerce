@@ -10,6 +10,7 @@ dependencies = [
     "django-filter>=26.1",
     "django-storages[s3]>=1.14.6",
     "django-stubs-ext>=6.1.0",
+    "django-stubs[compatible-mypy]>=6.1.0",
     "djangorestframework~=3.17",
     "djangorestframework-simplejwt>=5.5.1",
     "drf-spectacular~=0.30",

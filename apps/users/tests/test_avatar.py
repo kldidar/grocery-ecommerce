@@ -1,6 +1,5 @@
 import io
 
-import pytest
 from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -14,27 +13,6 @@ def _jpeg_upload(name: str = "avatar.jpg") -> io.BytesIO:
     buffer.seek(0)
     buffer.name = name
     return buffer
-
-
-@pytest.fixture
-def authenticated_client(db: None) -> tuple[APIClient, User]:
-    user = User.objects.create_user(
-        email="shopper@example.com",
-        password="correct-pass",
-    )
-
-    client = APIClient()
-
-    tokens = client.post(
-        "/api/v1/auth/token/",
-        {"email": user.email, "password": "correct-pass"},
-    )
-
-    client.credentials(
-        HTTP_AUTHORIZATION=f"Bearer {tokens.data['access']}",
-    )
-
-    return client, user
 
 
 def test_uploading_an_avatar_succeeds(

@@ -1,8 +1,11 @@
-import pytest
-from django.contrib.auth import get_user_model
-from django.db import IntegrityError
+import io
 
-User = get_user_model()
+import pytest
+from django.db import IntegrityError
+from rest_framework import status
+from rest_framework.test import APIClient
+
+from apps.users.models import User
 
 
 @pytest.mark.django_db
@@ -58,3 +61,13 @@ def test_username_field_is_email() -> None:
 
 def test_user_string_representation_is_email() -> None:
     assert str(User(email="shopper@example.com")) == "shopper@example.com"
+
+
+def test_uploading_an_invalid_avatar_is_rejected(
+    authenticated_client: tuple[APIClient, User],
+) -> None:
+    client, _ = authenticated_client
+    fake = io.BytesIO(b"not an image")
+    fake.name = "avatar.jpg"
+    response = client.patch("/api/v1/users/me/", {"avatar": fake}, format="multipart")
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
