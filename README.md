@@ -143,3 +143,7 @@ Access tokens are valid for 15 minutes, refresh tokens for 7 days, with
 rotation and blacklisting enabled (see `DECISIONS.md` for anything not
 covered here). All endpoints require authentication by default except
 `/api/health/` and `/api/v1/health/`.
+
+The token-obtain endpoint has its own, much stricter rate limit (5
+requests/minute) separate from the general API limits (100/hour
+anonymous, 1000/hour authenticated).

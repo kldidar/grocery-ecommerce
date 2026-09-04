@@ -108,3 +108,10 @@ jobs:
 
       - name: Generate coverage report
         run: uv run coverage report
+
+      - name: Django deployment security check
+        run: >
+          uv run python manage.py check --deploy
+          --settings=config.settings.production
+        env:
+          DJANGO_ALLOWED_HOSTS: example.com

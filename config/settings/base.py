@@ -132,7 +132,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
-MAILERS = {
+MAILERS: dict[str, Any] = {
     "default": {
         "BACKEND": "django.core.mail.backends.console.EmailBackend",
     },
@@ -182,6 +182,7 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
+    "SIGNING_KEY": env.jwt_signing_key or env.django_secret_key,
 }
 
 
