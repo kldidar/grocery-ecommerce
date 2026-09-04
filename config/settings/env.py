@@ -36,5 +36,7 @@ class EnvSettings(BaseSettings):
     minio_bucket_name: str = "media"
     minio_endpoint_url: str = "http://minio:9000"
 
+    cors_allowed_origins: str = ""
+
 
 env = EnvSettings()  # type: ignore[call-arg]
