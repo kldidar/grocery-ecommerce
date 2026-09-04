@@ -1,6 +1,7 @@
 import pytest
 from rest_framework import status
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.users.models import User
 
@@ -14,12 +15,13 @@ def user(db: None) -> User:
 
 
 def _authenticated_client(user: User) -> APIClient:
+    refresh = RefreshToken.for_user(user)
 
     client = APIClient()
-    tokens = client.post(
-        "/api/v1/auth/token/", {"email": user.email, "password": "correct-pass"}
+    client.credentials(
+        HTTP_AUTHORIZATION=f"Bearer {refresh.access_token}",
     )
-    client.credentials(HTTP_AUTHORIZATION=f"Bearer {tokens.data['access']}")
+
     return client
 
 

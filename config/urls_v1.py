@@ -7,17 +7,16 @@ line here — this module is the single place where v1 routes are aggregated.
 """
 
 from django.urls import include, path
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-    TokenVerifyView,
-)
+from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
 
 from apps.common.views import HealthCheckView
+from apps.users.views import ThrottledTokenObtainPairView
 
 urlpatterns = [
     path("health/", HealthCheckView.as_view(), name="health-check"),
-    path("auth/token/", TokenObtainPairView.as_view(), name="token-obtain-pair"),
+    path(
+        "auth/token/", ThrottledTokenObtainPairView.as_view(), name="token-obtain-pair"
+    ),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token-view"),
     path("auth/token/verify/", TokenVerifyView.as_view(), name="token-verify"),
     path("users/", include("apps.users.urls")),

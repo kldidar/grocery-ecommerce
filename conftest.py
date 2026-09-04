@@ -3,6 +3,7 @@ import secrets
 import pytest
 from django.conf import LazySettings
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.users.models import User
 
@@ -22,15 +23,11 @@ def authenticated_client(db: None) -> tuple[APIClient, User]:
         password=password,
     )
 
+    refresh = RefreshToken.for_user(user)
+
     client = APIClient()
-
-    tokens = client.post(
-        "/api/v1/auth/token/",
-        {"email": user.email, "password": password},
-    )
-
     client.credentials(
-        HTTP_AUTHORIZATION=f"Bearer {tokens.data['access']}",
+        HTTP_AUTHORIZATION=f"Bearer {refresh.access_token}",
     )
 
     return client, user
