@@ -190,14 +190,21 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Food E-Commerce Backend API",
     "DESCRIPTION": "Production-ready backend for a food e-commerce platform.",
     "VERSION": "1.0.0",
-    # Excludes the schema view's own (trivial) schema from the generated
-    # output — a commonly recommended setting to avoid recursive noise.
     "SERVE_INCLUDE_SCHEMA": False,
-    # Serve Swagger UI / ReDoc assets from drf-spectacular-sidecar instead
-    # of an external CDN.
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
     "REDOC_DIST": "SIDECAR",
+    "TAGS": [
+        {
+            "name": "Infrastructure",
+            "description": "Health checks and operational endpoints.",
+        },
+        {
+            "name": "Authentication",
+            "description": "JWT token issuance, refresh, and verification.",
+        },
+        {"name": "Users", "description": "User profile management."},
+    ],
 }
 
 
