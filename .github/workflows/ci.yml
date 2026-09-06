@@ -72,12 +72,17 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Install uv
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv and dependencies
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
           enable-cache: true
 
-      - name: Install dependencies
+      - name: Install project dependencies
         run: uv sync --locked --all-extras --dev
 
       - name: Create MinIO bucket
@@ -91,14 +96,21 @@ jobs:
               mc mb --ignore-existing local/media
             '
 
-      - name: Run Ruff (lint)
+      - name: Lint with Ruff
         run: uv run ruff check .
 
-      - name: Run Ruff (format check)
+      - name: Check formatting with Ruff
         run: uv run ruff format --check .
 
+      - name: Show type-checking tool versions
+        run: |
+          uv run mypy --version
+          uv run python -c "import django; print('Django:', django.get_version())"
+          uv run python -c "import django_stubs; print('django-stubs:', django_stubs.__file__)"
+          uv run python -c "import django_stubs_ext; print('django-stubs-ext:', django_stubs_ext.__file__)"
+
       - name: Run mypy
-        run: uv run mypy .
+        run: uv run mypy . --show-traceback
 
       - name: Run Bandit
         run: uv run bandit -c pyproject.toml -r .

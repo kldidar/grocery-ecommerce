@@ -110,6 +110,12 @@ omit = [
 
 [tool.coverage.report]
 show_missing = true
+
+# Floor, not target: prevents regression below the current baseline.
+# Raise as real business logic accumulates; see DECISIONS.md if this
+# value needs justification later.
+fail_under = 40
+
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
