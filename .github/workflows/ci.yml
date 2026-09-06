@@ -18,9 +18,9 @@ env:
 
   REDIS_URL: redis://localhost:6379/0
 
-  MINIO_ROOT_USER: minioadmin
-  MINIO_ROOT_PASSWORD: ci-minio-password
-  MINIO_BUCKET_NAME: media
+  MINIO_ROOT_USER: ci
+  MINIO_ROOT_PASSWORD: ci-password-12345
+  MINIO_BUCKET_NAME: ci-media
   MINIO_ENDPOINT_URL: http://localhost:9000
 
 jobs:
@@ -56,13 +56,12 @@ jobs:
       minio:
         image: quay.io/minio/minio:latest
         env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: ci-minio-password
+          MINIO_ROOT_USER: ci
+          MINIO_ROOT_PASSWORD: ci-password-12345
         ports:
           - 9000:9000
-          - 9001:9001
         options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
@@ -85,16 +84,23 @@ jobs:
       - name: Install project dependencies
         run: uv sync --locked --all-extras --dev
 
-      - name: Create MinIO bucket
+      - name: Create the MinIO bucket
         run: |
-          docker run --rm \
-            --network host \
-            --entrypoint /bin/sh \
-            quay.io/minio/mc:latest \
-            -c '
-              mc alias set local http://127.0.0.1:9000 minioadmin ci-minio-password &&
-              mc mb --ignore-existing local/media
-            '
+          uv run python -c "
+          import boto3
+
+          s3 = boto3.client(
+              's3',
+              endpoint_url='http://localhost:9000',
+              aws_access_key_id='ci',
+              aws_secret_access_key='ci-password-12345',
+          )
+
+          try:
+              s3.create_bucket(Bucket='ci-media')
+          except s3.exceptions.BucketAlreadyOwnedByYou:
+              pass
+          "
 
       - name: Lint with Ruff
         run: uv run ruff check .
@@ -105,9 +111,11 @@ jobs:
       - name: Show type-checking tool versions
         run: |
           uv run mypy --version
+          uv run python --version
           uv run python -c "import django; print('Django:', django.get_version())"
-          uv run python -c "import django_stubs; print('django-stubs:', django_stubs.__file__)"
-          uv run python -c "import django_stubs_ext; print('django-stubs-ext:', django_stubs_ext.__file__)"
+          uv run python -c "from importlib.metadata import version; print('django-stubs:', version('django-stubs'))"
+          uv run python -c "from importlib.metadata import version; print('django-stubs-ext:', version('django-stubs-ext'))"
+          uv run python -c "from importlib.metadata import version; print('djangorestframework-stubs:', version('djangorestframework-stubs'))"
 
       - name: Run mypy
         run: uv run mypy . --show-traceback
