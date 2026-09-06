@@ -1,5 +1,6 @@
 import io
 
+from django.core.files.storage import default_storage
 from PIL import Image
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -34,4 +35,32 @@ def test_uploading_an_avatar_succeeds(
     assert user.avatar.name is not None
     assert user.avatar.name.startswith("avatars/")
 
-    user.avatar.delete(save=False)  # test hygiene: do not leave the file in MinIO
+    user.avatar.delete(save=False)
+
+
+def test_replacing_an_avatar_deletes_the_old_file_from_storage(
+    authenticated_client: tuple[APIClient, User],
+) -> None:
+    client, user = authenticated_client
+
+    client.patch(
+        "/api/v1/users/me/",
+        {"avatar": _jpeg_upload("first.jpg")},
+        format="multipart",
+    )
+
+    user.refresh_from_db()
+
+    assert user.avatar.name is not None
+    old_name = user.avatar.name
+
+    client.patch(
+        "/api/v1/users/me/",
+        {"avatar": _jpeg_upload("second.jpg")},
+        format="multipart",
+    )
+
+    assert not default_storage.exists(old_name)
+
+    user.refresh_from_db()
+    user.avatar.delete(save=False)

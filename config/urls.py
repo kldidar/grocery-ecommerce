@@ -40,3 +40,6 @@ urlpatterns = [
         name="redoc",
     ),
 ]
+
+handler404 = "apps.common.views.handler404"
+handler500 = "apps.common.views.handler500"
