@@ -9,17 +9,27 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.users.models import User
 
+TEST_CACHE_SETTINGS = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "pytest-cache",
+    }
+}
+
+
+@pytest.fixture(autouse=True)
+def _test_cache(settings: LazySettings) -> None:
+    settings.CACHES = TEST_CACHE_SETTINGS
+
 
 @pytest.fixture(autouse=True)
 def _celery_eager(settings: LazySettings) -> None:
-
     settings.CELERY_TASK_ALWAYS_EAGER = True
     settings.CELERY_TASK_EAGER_PROPAGATES = True
 
 
 @pytest.fixture
 def user_factory(db: None) -> Callable[..., User]:
-
     def _create(**kwargs: object) -> User:
         kwargs.setdefault("email", "shopper@example.com")
 
@@ -38,7 +48,6 @@ def user_factory(db: None) -> Callable[..., User]:
 def authenticated_client(
     user_factory: Callable[..., User],
 ) -> tuple[APIClient, User]:
-
     password = secrets.token_urlsafe(16)
     user = user_factory(password=password)
 

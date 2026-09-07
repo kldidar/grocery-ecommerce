@@ -173,6 +173,7 @@ REST_FRAMEWORK = {
         # ThrottledTokenObtainPairView) — far stricter, since this is the
         # natural target for brute-force password guessing.
         "login": "5/minute",
+        "registration": "10/hour",
     },
 }
 

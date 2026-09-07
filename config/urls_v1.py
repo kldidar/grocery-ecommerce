@@ -12,6 +12,7 @@ from apps.common.views import HealthCheckView
 from apps.users.views import (
     DocumentedTokenRefreshView,
     DocumentedTokenVerifyView,
+    RegisterView,
     ThrottledTokenObtainPairView,
 )
 
@@ -26,5 +27,6 @@ urlpatterns = [
     path(
         "auth/token/verify/", DocumentedTokenVerifyView.as_view(), name="token-verify"
     ),
+    path("auth/register/", RegisterView.as_view(), name="register"),
     path("users/", include("apps.users.urls")),
 ]

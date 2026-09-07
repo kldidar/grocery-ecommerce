@@ -1,7 +1,8 @@
 from typing import cast
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -10,7 +11,7 @@ from rest_framework_simplejwt.views import (
 )
 
 from .models import User
-from .serializers import UserSerializer
+from .serializers import RegisterSerializer, UserSerializer
 
 
 @extend_schema_view(
@@ -65,3 +66,11 @@ class DocumentedTokenRefreshView(TokenRefreshView):
 )
 class DocumentedTokenVerifyView(TokenVerifyView):
     """TokenVerifyView, documented — no behavioural change."""
+
+
+@extend_schema(tags=["Authentication"], summary="Register")
+class RegisterView(CreateAPIView[User]):
+    serializer_class = RegisterSerializer
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "registration"

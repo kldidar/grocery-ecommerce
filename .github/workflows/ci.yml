@@ -60,11 +60,7 @@ jobs:
           MINIO_ROOT_PASSWORD: ci-password-12345
         ports:
           - 9000:9000
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
+          - 9001:9001
         command: server /data --console-address ":9001"
 
     steps:
@@ -84,6 +80,28 @@ jobs:
       - name: Install project dependencies
         run: uv sync --locked --all-extras --dev
 
+      - name: Wait for MinIO
+        run: |
+          for i in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:9000/minio/health/live > /dev/null; then
+              echo "MinIO is ready"
+              exit 0
+            fi
+
+            echo "Waiting for MinIO... ($i/30)"
+            sleep 2
+          done
+
+          echo "MinIO failed to become ready"
+          docker ps -a
+          docker logs $(docker ps -aq --filter "ancestor=quay.io/minio/minio:latest") || true
+          exit 1
+
+      - name: Show MinIO status
+        run: |
+          docker ps -a
+          curl --fail http://127.0.0.1:9000/minio/health/live
+
       - name: Create the MinIO bucket
         run: |
           uv run python -c "
@@ -91,7 +109,7 @@ jobs:
 
           s3 = boto3.client(
               's3',
-              endpoint_url='http://localhost:9000',
+              endpoint_url='http://127.0.0.1:9000',
               aws_access_key_id='ci',
               aws_secret_access_key='ci-password-12345',
           )
@@ -110,8 +128,8 @@ jobs:
 
       - name: Show type-checking tool versions
         run: |
-          uv run mypy --version
           uv run python --version
+          uv run mypy --version
           uv run python -c "import django; print('Django:', django.get_version())"
           uv run python -c "from importlib.metadata import version; print('django-stubs:', version('django-stubs'))"
           uv run python -c "from importlib.metadata import version; print('django-stubs-ext:', version('django-stubs-ext'))"
