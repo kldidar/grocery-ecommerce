@@ -13,20 +13,42 @@ from apps.users.views import (
     DocumentedTokenRefreshView,
     DocumentedTokenVerifyView,
     RegisterView,
+    ResendVerificationEmailView,
     ThrottledTokenObtainPairView,
+    VerifyEmailView,
 )
 
 urlpatterns = [
     path("health/", HealthCheckView.as_view(), name="health-check"),
     path(
-        "auth/token/", ThrottledTokenObtainPairView.as_view(), name="token-obtain-pair"
+        "auth/token/",
+        ThrottledTokenObtainPairView.as_view(),
+        name="token-obtain-pair",
     ),
     path(
-        "auth/token/refresh/", DocumentedTokenRefreshView.as_view(), name="token-view"
+        "auth/token/refresh/",
+        DocumentedTokenRefreshView.as_view(),
+        name="token-refresh",
     ),
     path(
-        "auth/token/verify/", DocumentedTokenVerifyView.as_view(), name="token-verify"
+        "auth/token/verify/",
+        DocumentedTokenVerifyView.as_view(),
+        name="token-verify",
     ),
-    path("auth/register/", RegisterView.as_view(), name="register"),
+    path(
+        "auth/register/",
+        RegisterView.as_view(),
+        name="register",
+    ),
+    path(
+        "auth/verify-email/",
+        VerifyEmailView.as_view(),
+        name="verify-email",
+    ),
+    path(
+        "auth/resend-verification/",
+        ResendVerificationEmailView.as_view(),
+        name="resend-verification",
+    ),
     path("users/", include("apps.users.urls")),
 ]

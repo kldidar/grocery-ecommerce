@@ -18,7 +18,7 @@ env:
 
   REDIS_URL: redis://localhost:6379/0
 
-  MINIO_ROOT_USER: ci
+  MINIO_ROOT_USER: minioadmin
   MINIO_ROOT_PASSWORD: ci-password-12345
   MINIO_BUCKET_NAME: ci-media
   MINIO_ENDPOINT_URL: http://localhost:9000
@@ -56,7 +56,7 @@ jobs:
       minio:
         image: quay.io/minio/minio:latest
         env:
-          MINIO_ROOT_USER: ci
+          MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: ci-password-12345
         ports:
           - 9000:9000
@@ -110,7 +110,7 @@ jobs:
           s3 = boto3.client(
               's3',
               endpoint_url='http://127.0.0.1:9000',
-              aws_access_key_id='ci',
+              aws_access_key_id='minioadmin',
               aws_secret_access_key='ci-password-12345',
           )
 
