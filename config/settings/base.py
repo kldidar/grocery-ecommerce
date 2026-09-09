@@ -10,7 +10,7 @@ SECRET_KEY = env.django_secret_key
 
 DEBUG = env.django_debug
 
-ALLOWED_HOSTS: list[str] = ["*"]
+ALLOWED_HOSTS = [host.strip() for host in env.allowed_hosts.split(",") if host.strip()]
 
 
 # Application definition

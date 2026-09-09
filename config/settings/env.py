@@ -1,10 +1,8 @@
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class EnvSettings(BaseSettings):
-    """Strongly typed representation of the project's environment variables."""
-
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -31,7 +29,6 @@ class EnvSettings(BaseSettings):
 
     # Email
     default_from_email: str = "noreply@example.com"
-
     email_host: str = ""
     email_port: int = 587
     email_host_user: str = ""
@@ -39,7 +36,7 @@ class EnvSettings(BaseSettings):
     email_use_tls: bool = True
     email_use_ssl: bool = False
 
-    # Minio
+    # MinIO
     minio_root_user: str
     minio_root_password: str
     minio_bucket_name: str = "media"
@@ -48,7 +45,13 @@ class EnvSettings(BaseSettings):
     cors_allowed_origins: str = ""
 
     # Security hardening
-    allowed_hosts: str = "localhost,127.0.0.1"
+    allowed_hosts: str = Field(
+        default="localhost,127.0.0.1",
+        validation_alias=AliasChoices(
+            "DJANGO_ALLOWED_HOSTS",
+            "ALLOWED_HOSTS",
+        ),
+    )
     csrf_trusted_origins: str = ""
     jwt_signing_key: str | None = None
 

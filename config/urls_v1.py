@@ -12,6 +12,7 @@ from apps.common.views import HealthCheckView
 from apps.users.views import (
     DocumentedTokenRefreshView,
     DocumentedTokenVerifyView,
+    LoginHistoryView,
     RegisterView,
     ResendVerificationEmailView,
     ThrottledTokenObtainPairView,
@@ -51,4 +52,5 @@ urlpatterns = [
         name="resend-verification",
     ),
     path("users/", include("apps.users.urls")),
+    path("users/me/login-history/", LoginHistoryView.as_view(), name="login-history"),
 ]

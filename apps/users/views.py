@@ -1,10 +1,11 @@
 from typing import cast
 
+from django.db.models import QuerySet
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework import serializers
-from rest_framework.generics import CreateAPIView, RetrieveUpdateAPIView
+from rest_framework import serializers, status
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -17,8 +18,9 @@ from rest_framework_simplejwt.views import (
     TokenVerifyView,
 )
 
-from .models import User
-from .serializers import RegisterSerializer, UserSerializer
+from apps.users.models import LoginEvent, User
+
+from .serializers import LoginEventSerializer, RegisterSerializer, UserSerializer
 from .services import send_verification_email
 from .tokens import email_verification_token
 
@@ -58,6 +60,26 @@ class ThrottledTokenObtainPairView(TokenObtainPairView):
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "login"
 
+    def post(self, request: Request, *args: object, **kwargs: object) -> Response:
+        response = super().post(request, *args, **kwargs)
+
+        if response.status_code == status.HTTP_200_OK:
+            data = cast(dict[str, object], request.data)
+            email = str(data.get("email", ""))
+
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                pass
+            else:
+                LoginEvent.objects.create(
+                    user=user,
+                    ip_address=request.META.get("REMOTE_ADDR") or "127.0.0.1",
+                    user_agent=request.META.get("HTTP_USER_AGENT", "")[:512],
+                )
+
+        return response
+
 
 @extend_schema(
     tags=["Authentication"],
@@ -89,7 +111,7 @@ class RegisterView(CreateAPIView[User]):
     throttle_scope = "registration"
 
     def perform_create(self, serializer: BaseSerializer[User]) -> None:
-        user = cast(User, serializer.save())
+        user = serializer.save()
         send_verification_email(user, self.request)
 
 
@@ -156,3 +178,12 @@ class ResendVerificationEmailView(APIView):
         send_verification_email(user, request)
 
         return Response({"status": "sent"})
+
+
+@extend_schema(tags=["Users"], summary="My login history")
+class LoginHistoryView(ListAPIView[LoginEvent]):
+    serializer_class = LoginEventSerializer
+
+    def get_queryset(self) -> QuerySet[LoginEvent]:
+        user = cast(User, self.request.user)
+        return user.login_events.all()

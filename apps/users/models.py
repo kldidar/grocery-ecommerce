@@ -79,6 +79,17 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
         return self.email
 
 
+class LoginEvent(BaseModel):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="login_events"
+    )
+    ip_address = models.GenericIPAddressField()
+    user_agent = models.CharField(max_length=512, blank=True)
+
+    class Meta(TypedModelMeta):
+        ordering = ["-created_at"]
+
+
 class UserExtraFields(TypedDict, total=False):
     is_staff: bool
     is_superuser: bool

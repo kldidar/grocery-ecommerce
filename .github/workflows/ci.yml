@@ -7,8 +7,9 @@ on:
   pull_request:
 
 env:
-  DJANGO_SECRET_KEY: ci-placeholder-secret-key
+  DJANGO_SECRET_KEY: ci-django-secret-key-12345678901234567890
   DJANGO_DEBUG: "False"
+  DJANGO_ALLOWED_HOSTS: example.com
 
   POSTGRES_DB: ci
   POSTGRES_USER: ci
@@ -94,7 +95,7 @@ jobs:
 
           echo "MinIO failed to become ready"
           docker ps -a
-          docker logs $(docker ps -aq --filter "ancestor=quay.io/minio/minio:latest") || true
+          docker logs "$(docker ps -aq --filter 'ancestor=quay.io/minio/minio:latest')" || true
           exit 1
 
       - name: Show MinIO status
@@ -104,21 +105,10 @@ jobs:
 
       - name: Create the MinIO bucket
         run: |
-          uv run python -c "
-          import boto3
-
-          s3 = boto3.client(
-              's3',
-              endpoint_url='http://127.0.0.1:9000',
-              aws_access_key_id='minioadmin',
-              aws_secret_access_key='ci-password-12345',
-          )
-
-          try:
-              s3.create_bucket(Bucket='ci-media')
-          except s3.exceptions.BucketAlreadyOwnedByYou:
-              pass
-          "
+          docker run --rm             --network host             --entrypoint /bin/sh             quay.io/minio/mc:latest             -c '
+              mc alias set local http://127.0.0.1:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" &&
+              mc mb --ignore-existing "local/$MINIO_BUCKET_NAME"
+            '
 
       - name: Lint with Ruff
         run: uv run ruff check .
@@ -136,7 +126,7 @@ jobs:
           uv run python -c "from importlib.metadata import version; print('djangorestframework-stubs:', version('djangorestframework-stubs'))"
 
       - name: Run mypy
-        run: uv run mypy . --show-traceback
+        run: uv run mypy .
 
       - name: Run Bandit
         run: uv run bandit -c pyproject.toml -r .
@@ -151,5 +141,3 @@ jobs:
         run: >
           uv run python manage.py check --deploy
           --settings=config.settings.production
-        env:
-          DJANGO_ALLOWED_HOSTS: example.com
