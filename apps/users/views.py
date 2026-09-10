@@ -20,8 +20,13 @@ from rest_framework_simplejwt.views import (
 
 from apps.users.models import LoginEvent, User
 
-from .serializers import LoginEventSerializer, RegisterSerializer, UserSerializer
-from .services import send_verification_email
+from .serializers import (
+    LoginEventSerializer,
+    PasswordResetRequestSerializer,
+    RegisterSerializer,
+    UserSerializer,
+)
+from .services import send_password_reset_email, send_verification_email
 from .tokens import email_verification_token
 
 
@@ -187,3 +192,25 @@ class LoginHistoryView(ListAPIView[LoginEvent]):
     def get_queryset(self) -> QuerySet[LoginEvent]:
         user = cast(User, self.request.user)
         return user.login_events.all()
+
+
+@extend_schema(tags=["Authentication"], summary="Request a password reset")
+class PasswordResetRequestView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "password_reset"
+
+    def post(self, request: Request) -> Response:
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            user = User.objects.get(email__iexact=serializer.validated_data["email"])
+        except User.DoesNotExist:
+            pass
+        else:
+            send_password_reset_email(user, request)
+        return Response(
+            {
+                "detail": "If an account with that email exists, a reset link has been sent."
+            }
+        )

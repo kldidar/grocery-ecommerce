@@ -13,6 +13,7 @@ from apps.users.views import (
     DocumentedTokenRefreshView,
     DocumentedTokenVerifyView,
     LoginHistoryView,
+    PasswordResetRequestView,
     RegisterView,
     ResendVerificationEmailView,
     ThrottledTokenObtainPairView,
@@ -53,4 +54,9 @@ urlpatterns = [
     ),
     path("users/", include("apps.users.urls")),
     path("users/me/login-history/", LoginHistoryView.as_view(), name="login-history"),
+    path(
+        "auth/password-reset/",
+        PasswordResetRequestView.as_view(),
+        name="password-reset-request",
+    ),
 ]

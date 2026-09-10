@@ -35,3 +35,7 @@ class LoginEventSerializer(serializers.ModelSerializer[LoginEvent]):
         model = LoginEvent
         fields = ["id", "ip_address", "user_agent", "created_at"]
         read_only_fields = ["id", "ip_address", "user_agent", "created_at"]
+
+
+class PasswordResetRequestSerializer(serializers.Serializer[dict[str, object]]):
+    email = serializers.EmailField()
