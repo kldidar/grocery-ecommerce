@@ -2,6 +2,10 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from rest_framework.request import Request
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 
 from apps.notifications.services import NotificationService
 from apps.users.models import User
@@ -48,3 +52,8 @@ def send_password_reset_email(user: User, request: Request) -> None:
         "Reset your password",
         "Reset your password by submitting a POST to",
     )
+
+
+def blacklist_all_tokens_for(user: User) -> None:
+    for outstanding in OutstandingToken.objects.filter(user=user):
+        BlacklistedToken.objects.get_or_create(token=outstanding)

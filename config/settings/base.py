@@ -175,6 +175,7 @@ REST_FRAMEWORK = {
         "login": "5/minute",
         "registration": "10/hour",
         "reset": "5/hour",
+        "reset_confirm": "10/hour",
     },
 }
 

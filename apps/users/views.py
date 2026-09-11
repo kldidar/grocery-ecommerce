@@ -19,15 +19,15 @@ from rest_framework_simplejwt.views import (
 )
 
 from apps.users.models import LoginEvent, User
-
-from .serializers import (
+from apps.users.serializers import (
     LoginEventSerializer,
+    PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     RegisterSerializer,
     UserSerializer,
 )
-from .services import send_password_reset_email, send_verification_email
-from .tokens import email_verification_token
+from apps.users.services import send_password_reset_email, send_verification_email
+from apps.users.tokens import email_verification_token
 
 
 @extend_schema_view(
@@ -214,3 +214,16 @@ class PasswordResetRequestView(APIView):
                 "detail": "If an account with that email exists, a reset link has been sent."
             }
         )
+
+
+@extend_schema(tags=["Authentication"], summary="Confirm a password reset")
+class PasswordResetConfirmView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "reset_confirm"
+
+    def post(self, request: Request) -> Response:
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"status": "password_reset_complete"})
