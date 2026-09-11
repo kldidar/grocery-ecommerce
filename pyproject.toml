@@ -5,6 +5,7 @@ description = "Production-ready backend for a food e-commerce platform."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "boto3>=1.40.0",
     "celery[redis]~=5.6",
     "django~=6.1",
     "django-cors-headers>=4.9.0",

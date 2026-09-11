@@ -174,7 +174,7 @@ REST_FRAMEWORK = {
         # natural target for brute-force password guessing.
         "login": "5/minute",
         "registration": "10/hour",
-        "password_reset": "5/hour",
+        "reset": "5/hour",
     },
 }
 

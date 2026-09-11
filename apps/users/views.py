@@ -198,7 +198,7 @@ class LoginHistoryView(ListAPIView[LoginEvent]):
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle]
-    throttle_scope = "password_reset"
+    throttle_scope = "reset"
 
     def post(self, request: Request) -> Response:
         serializer = PasswordResetRequestSerializer(data=request.data)

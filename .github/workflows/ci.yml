@@ -9,7 +9,7 @@ on:
 env:
   DJANGO_SECRET_KEY: ci-django-secret-key-12345678901234567890
   DJANGO_DEBUG: "False"
-  DJANGO_ALLOWED_HOSTS: example.com
+  ALLOWED_HOSTS: example.com
 
   POSTGRES_DB: ci
   POSTGRES_USER: ci
@@ -98,20 +98,30 @@ jobs:
           docker logs "$(docker ps -aq --filter 'ancestor=quay.io/minio/minio:latest')" || true
           exit 1
 
-      - name: Show MinIO status
+      - name: Create and verify the MinIO bucket
         run: |
-          docker ps -a
-          curl --fail http://127.0.0.1:9000/minio/health/live
+          uv run python - <<'PY'
+          import os
 
-      - name: Create the MinIO bucket
-        run: |
-          docker run --rm \
-            --network host \
-            quay.io/minio/mc:latest \
-            /bin/sh -c '
-              mc alias set local http://127.0.0.1:9000 minioadmin ci-password-12345 &&
-              mc mb --ignore-existing local/ci-media
-            '
+          import boto3
+
+          s3 = boto3.client(
+              "s3",
+              endpoint_url=os.environ["MINIO_ENDPOINT_URL"],
+              aws_access_key_id=os.environ["MINIO_ROOT_USER"],
+              aws_secret_access_key=os.environ["MINIO_ROOT_PASSWORD"],
+          )
+
+          bucket = os.environ["MINIO_BUCKET_NAME"]
+
+          try:
+              s3.create_bucket(Bucket=bucket)
+          except s3.exceptions.BucketAlreadyOwnedByYou:
+              pass
+
+          s3.head_bucket(Bucket=bucket)
+          print(f"MinIO bucket is ready: {bucket}")
+          PY
 
       - name: Lint with Ruff
         run: uv run ruff check .
