@@ -176,6 +176,7 @@ REST_FRAMEWORK = {
         "registration": "10/hour",
         "reset": "5/hour",
         "reset_confirm": "10/hour",
+        "email_verification_resend": "5/hour",
     },
 }
 

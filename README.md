@@ -136,6 +136,19 @@ blacklisting enabled. The token-obtain endpoint has its own, much
 stricter rate limit (5/minute) separate from the general API limits
 (100/hour anonymous, 1000/hour authenticated).
 
+
+Additional endpoints:
+
+- `POST /api/v1/auth/register/` — self-registration (sends a verification email)
+- `POST /api/v1/auth/verify-email/`, `POST /api/v1/auth/resend-verification/`
+- `POST /api/v1/auth/password-reset/`, `POST /api/v1/auth/password-reset/confirm/`
+- `POST /api/v1/auth/logout/` — blacklists the given refresh token
+- `GET /api/v1/users/me/login-history/`
+
+Password reset invalidates all outstanding refresh tokens for the
+affected account. Logout invalidates the supplied refresh token.
+Both use the same SimpleJWT blacklist infrastructure.
+
 ## Background tasks
 
 Celery, with Redis as broker and result backend:

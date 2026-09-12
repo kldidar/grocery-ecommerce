@@ -5,6 +5,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from rest_framework import serializers
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.users.models import LoginEvent, User
 from apps.users.services import blacklist_all_tokens_for
@@ -86,3 +88,18 @@ class PasswordResetConfirmSerializer(serializers.Serializer[User]):
         blacklist_all_tokens_for(user)
 
         return user
+
+
+class LogoutSerializer(serializers.Serializer[dict[str, object]]):
+    refresh = serializers.CharField()
+
+    def save(self, **kwargs: object) -> None:  # type: ignore[override]
+        refresh = cast(str, self.validated_data["refresh"])
+
+        try:
+            token = RefreshToken(refresh)  # type: ignore[arg-type]
+            token.blacklist()
+        except TokenError as exc:
+            raise serializers.ValidationError(
+                "Invalid or already-invalidated token."
+            ) from exc

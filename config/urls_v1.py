@@ -12,7 +12,7 @@ from apps.common.views import HealthCheckView
 from apps.users.views import (
     DocumentedTokenRefreshView,
     DocumentedTokenVerifyView,
-    LoginHistoryView,
+    LogoutView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
     RegisterView,
@@ -54,7 +54,6 @@ urlpatterns = [
         name="resend-verification",
     ),
     path("users/", include("apps.users.urls")),
-    path("users/me/login-history/", LoginHistoryView.as_view(), name="login-history"),
     path(
         "auth/password-reset/",
         PasswordResetRequestView.as_view(),
@@ -65,4 +64,5 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name="password-reset-confirm",
     ),
+    path("auth/logout/", LogoutView.as_view(), name="logout"),
 ]

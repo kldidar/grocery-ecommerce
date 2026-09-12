@@ -21,6 +21,7 @@ from rest_framework_simplejwt.views import (
 from apps.users.models import LoginEvent, User
 from apps.users.serializers import (
     LoginEventSerializer,
+    LogoutSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     RegisterSerializer,
@@ -169,6 +170,8 @@ class VerifyEmailView(APIView):
     summary="Resend verification email",
 )
 class ResendVerificationEmailView(APIView):
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "email_verification_resend"
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request) -> Response:
@@ -227,3 +230,19 @@ class PasswordResetConfirmView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"status": "password_reset_complete"})
+
+
+@extend_schema(
+    tags=["Authentication"],
+    summary="Log out",
+    description="Blacklist the given refresh token, ending that session immediately.",
+)
+class LogoutView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request: Request) -> Response:
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

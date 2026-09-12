@@ -77,3 +77,15 @@ table of their own. This diagram will grow relationships as `catalog`,
   doesn't exist.
 - **Development Guide** — not assigned to this session; a candidate for
   its own, dedicated documentation session later.
+
+## Roles and permissions
+
+- Object-level ownership: `apps.users.permissions.IsOwnerOrReadOnly` (Day 5).
+- Staff-only access: DRF's built-in `rest_framework.permissions.IsAdminUser` —
+  no project-specific class needed.
+- Fine-grained roles: Django's `Group`/`Permission` models are available
+  through `PermissionsMixin` (Day 5) and auto-registered in the admin.
+  No groups are seeded yet — there is no concrete, differentiated
+  permission set to assign them today (no admin-only business endpoints
+  exist). Populate this when a real need appears, e.g. a "Content Manager"
+  group scoped to catalog permissions.
