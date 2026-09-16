@@ -2,7 +2,6 @@ from copy import deepcopy
 
 from .base import *  # noqa: F401, F403
 from .base import LOGGING as BASE_LOGGING
-from .base import MAILERS as BASE_MAILERS
 from .env import env
 
 DEBUG = False
@@ -13,16 +12,17 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip() for origin in env.csrf_trusted_origins.split(",") if origin.strip()
 ]
 
-MAILERS = deepcopy(BASE_MAILERS)
-MAILERS["default"] = {
-    "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
-    "OPTIONS": {
-        "host": env.email_host,
-        "port": env.email_port,
-        "username": env.email_host_user,
-        "password": env.email_host_password,
-        "use_tls": env.email_use_tls,
-        "use_ssl": env.email_use_ssl,
+MAILERS = {
+    "default": {
+        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+        "OPTIONS": {
+            "host": env.email_host,
+            "port": env.email_port,
+            "username": env.email_host_user,
+            "password": env.email_host_password,
+            "use_tls": env.email_use_tls,
+            "use_ssl": env.email_use_ssl,
+        },
     },
 }
 

@@ -13,7 +13,10 @@ class UserManager(BaseUserManager["User"]):
     use_in_migrations = True
 
     def _create_user(
-        self, email: str, password: str | None, **extra_fields: Any
+        self,
+        email: str,
+        password: str | None,
+        **extra_fields: Any,  # noqa: ANN401
     ) -> "User":
 
         if not email:
@@ -27,7 +30,10 @@ class UserManager(BaseUserManager["User"]):
         return user
 
     def create_user(
-        self, email: str, password: str | None = None, **extra_fields: Any
+        self,
+        email: str,
+        password: str | None = None,
+        **extra_fields: Any,  # noqa: ANN401
     ) -> "User":
 
         extra_fields.setdefault("is_staff", False)
@@ -36,7 +42,10 @@ class UserManager(BaseUserManager["User"]):
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(
-        self, email: str, password: str | None = None, **extra_fields: Any
+        self,
+        email: str,
+        password: str | None = None,
+        **extra_fields: Any,  # noqa: ANN401
     ) -> "User":
 
         extra_fields.setdefault("is_staff", True)

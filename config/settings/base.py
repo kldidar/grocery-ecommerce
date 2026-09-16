@@ -140,6 +140,8 @@ MAILERS: dict[str, Any] = {
 
 DEFAULT_FROM_EMAIL = env.default_from_email
 
+DEFAULT_FROM_EMAIL = env.default_from_email
+
 
 AUTH_USER_MODEL = "users.User"
 
@@ -291,7 +293,7 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "same-origin"
 
 
-# Cashe
+# Cache
 
 CACHES = {
     "default": {

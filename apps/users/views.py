@@ -3,6 +3,7 @@ from typing import cast
 from django.db.models import QuerySet
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import serializers, status
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveUpdateAPIView
@@ -150,6 +151,8 @@ class VerifyEmailSerializer(serializers.Serializer[dict[str, object]]):
 @extend_schema(
     tags=["Authentication"],
     summary="Verify email",
+    request=VerifyEmailSerializer,
+    responses={200: OpenApiTypes.OBJECT},
 )
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
@@ -168,6 +171,8 @@ class VerifyEmailView(APIView):
 @extend_schema(
     tags=["Authentication"],
     summary="Resend verification email",
+    request=None,
+    responses={200: OpenApiTypes.OBJECT},
 )
 class ResendVerificationEmailView(APIView):
     throttle_classes = [ScopedRateThrottle]
@@ -190,14 +195,24 @@ class ResendVerificationEmailView(APIView):
 
 @extend_schema(tags=["Users"], summary="My login history")
 class LoginHistoryView(ListAPIView[LoginEvent]):
+    queryset = LoginEvent.objects.none()
     serializer_class = LoginEventSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self) -> QuerySet[LoginEvent]:
+        if getattr(self, "swagger_fake_view", False):
+            return LoginEvent.objects.none()
+
         user = cast(User, self.request.user)
         return user.login_events.all()
 
 
-@extend_schema(tags=["Authentication"], summary="Request a password reset")
+@extend_schema(
+    tags=["Authentication"],
+    summary="Request a password reset",
+    request=PasswordResetRequestSerializer,
+    responses={200: OpenApiTypes.OBJECT},
+)
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle]
@@ -206,20 +221,29 @@ class PasswordResetRequestView(APIView):
     def post(self, request: Request) -> Response:
         serializer = PasswordResetRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
         try:
             user = User.objects.get(email__iexact=serializer.validated_data["email"])
         except User.DoesNotExist:
             pass
         else:
             send_password_reset_email(user, request)
+
         return Response(
             {
-                "detail": "If an account with that email exists, a reset link has been sent."
+                "detail": (
+                    "If an account with that email exists, a reset link has been sent."
+                )
             }
         )
 
 
-@extend_schema(tags=["Authentication"], summary="Confirm a password reset")
+@extend_schema(
+    tags=["Authentication"],
+    summary="Confirm a password reset",
+    request=PasswordResetConfirmSerializer,
+    responses={200: OpenApiTypes.OBJECT},
+)
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle]
@@ -229,13 +253,16 @@ class PasswordResetConfirmView(APIView):
         serializer = PasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
         return Response({"status": "password_reset_complete"})
 
 
 @extend_schema(
     tags=["Authentication"],
     summary="Log out",
-    description="Blacklist the given refresh token, ending that session immediately.",
+    description=("Blacklist the given refresh token, ending that session immediately."),
+    request=LogoutSerializer,
+    responses={204: None},
 )
 class LogoutView(APIView):
     permission_classes = [AllowAny]

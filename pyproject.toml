@@ -12,7 +12,6 @@ dependencies = [
     "django-filter>=26.1",
     "django-storages[s3]>=1.14.6",
     "django-stubs-ext>=6.1.0",
-    "django-stubs[compatible-mypy]>=6.1.0",
     "djangorestframework~=3.17",
     "djangorestframework-simplejwt>=5.5.1",
     "drf-spectacular~=0.30",
@@ -65,7 +64,6 @@ known-first-party = ["apps", "config"]
 [tool.ruff.lint.per-file-ignores]
 "**/migrations/*.py" = ["E501", "I001"]
 "**/tests/*.py" = ["S101", "S105", "S106"]
-"apps/users/models.py" = ["ANN401"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -95,7 +93,7 @@ python_files = ["test_*.py", "*_test.py"]
 testpaths = ["apps", "tests"]
 # Reuses the test database between runs instead of recreating it every
 # time, which is significantly faster once the suite grows. After changing
-# a migration, run once with `--create-db` to force a fresh test database.
+# a migration, run once with --create-db to force a fresh test database.
 addopts = "--reuse-db"
 
 [tool.coverage.run]

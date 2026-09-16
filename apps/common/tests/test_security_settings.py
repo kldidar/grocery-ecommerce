@@ -28,3 +28,7 @@ def test_login_has_a_dedicated_stricter_throttle_rate() -> None:
 
 def test_secret_key_meets_the_minimum_length() -> None:
     assert len(settings.SECRET_KEY) >= 32
+
+
+def test_default_mailer_is_configured() -> None:
+    assert "default" in settings.MAILERS
