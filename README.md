@@ -1,4 +1,4 @@
-# Groery E-Commerce Backend
+# Grocery E-Commerce Backend
 
 Production-ready backend for a grocery e-commerce platform, built with
 Django and Django REST Framework.

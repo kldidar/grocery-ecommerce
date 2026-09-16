@@ -50,3 +50,68 @@ decision is not revisited without a documented reason.
 **Alternative:** Three separate tools (Ruff linter + Black formatter + isort) — rejected: risk of formatting rule divergence between linter and formatter, slower pre-commit and CI without benefit in outcome.
 
 **Consequences:** The entries "Black" and "isort" in the original documents are interpreted as "formatting" and "import sorting" in essence.
+
+---
+
+## ADR-004 — Day 10 (Optimization) postponed; Day 11 performed first
+
+**Date:** 2026-09-05
+**Status:** Accepted
+
+**Context:** The roadmap prescribes a strict order: Day 10 (DB indexes,
+Redis cache, API optimization) before Day 11 (documentation). A direct
+instruction was received to proceed to Day 11.
+
+**Additional rationale (not merely "per instruction" — `02_Project.md`
+requires an objective technical reason for deviating from the order):**
+Day 10 optimization today would be largely speculative. The only model
+with meaningful queries is `User` (email lookup, already covered by the
+implicit unique index from `unique=True`); `Catalog`/`Order`/`Cart` —
+models that would give indexes and caching real substance — do not exist
+yet. Documentation (Day 11), by contrast, has no technical dependency on
+Day 10 and describes an already-existing system, not a hypothetical
+future one.
+
+**Decision:** Day 10 is postponed, not cancelled or removed from the
+roadmap. Return to it is expected after `catalog`/`cart`/`orders` models
+appear with real query patterns.
+
+**Alternative:** Insist on the literal order — rejected: preserving
+order for its own sake when an objective reason for deviation exists
+would contradict the very principle that introduced this requirement in
+`02_Project.md`.
+
+**Consequences:** "Day N" numbering continues to follow the roadmap
+(next after Day 11 — Day 12), with the understanding that Day 10 remains
+an outstanding item in the queue, not a forgotten one.
+
+---
+
+---
+
+## ADR-005 — Stage 1 scope reduced to genuinely missing features
+
+**Date:** 2026-09-XX (день, когда было принято)
+**Status:** Accepted
+
+**Context:** Stage 1 of the roadmap was planned as a full pass over
+auth-related functionality (custom user, JWT, permissions, registration,
+email verification, password reset, logout, login history). By the time
+Stage 1 was reached, Days 5–7 had already delivered the custom user
+model, JWT with rotation/blacklisting, permission classes, and a
+`/users/me/` endpoint. Rebuilding these would duplicate completed,
+tested work.
+
+**Decision:** Stage 1 delivers only the genuinely missing pieces on top
+of what Days 5–7 already provide: self-registration, email verification,
+login history, password reset with JWT invalidation, and logout via
+refresh-token blacklisting. Existing auth infrastructure is reused, not
+rewritten.
+
+**Alternative:** Follow the original Stage 1 scope literally, rebuilding
+custom user and JWT — rejected: violates DRY, wastes sessions, and would
+risk regressing already-working, tested functionality.
+
+**Consequences:** Stage 1 completes earlier than originally scoped.
+Freed sessions go to later stages. The roadmap's day count for Stage 1
+is not authoritative; the definition of "missing" is what matters.
