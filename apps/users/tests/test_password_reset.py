@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from unittest.mock import patch
 
 import pytest
 from django.contrib.auth.tokens import default_token_generator
@@ -99,6 +100,7 @@ def test_confirm_rejects_a_token_that_was_already_used(
     )
 
     assert second_attempt.status_code == status.HTTP_400_BAD_REQUEST
+    assert second_attempt.data["error"]["message"] == "Invalid or expired reset link."
 
 
 @pytest.mark.django_db
@@ -141,3 +143,26 @@ def test_confirm_blacklists_refresh_tokens_issued_before_the_reset(
     )
 
     assert refresh_attempt.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.django_db
+def test_confirm_rolls_back_the_password_change_if_blacklisting_fails(
+    user_factory: Callable[..., User],
+) -> None:
+    user = user_factory(email="real@example.com", password="old-passw0rd")
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+
+    with patch(
+        "apps.users.serializers.blacklist_all_tokens_for",
+        side_effect=RuntimeError("simulated failure"),
+    ):
+        response = APIClient().post(
+            "/api/v1/auth/password-reset/confirm/",
+            {"uid": uid, "token": token, "new_password": "a-new-strong-passw0rd"},
+        )
+
+    assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    user.refresh_from_db()
+    assert user.check_password("old-passw0rd") is True

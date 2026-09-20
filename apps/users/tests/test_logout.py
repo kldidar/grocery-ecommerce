@@ -75,3 +75,7 @@ def test_logout_with_an_already_blacklisted_token_is_rejected(
     )
 
     assert second_attempt.status_code == status.HTTP_400_BAD_REQUEST
+    assert (
+        second_attempt.data["error"]["message"]
+        == "Invalid or already-invalidated token."
+    )

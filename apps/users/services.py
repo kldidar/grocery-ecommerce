@@ -55,5 +55,8 @@ def send_password_reset_email(user: User, request: Request) -> None:
 
 
 def blacklist_all_tokens_for(user: User) -> None:
-    for outstanding in OutstandingToken.objects.filter(user=user):
-        BlacklistedToken.objects.get_or_create(token=outstanding)
+    outstanding_tokens = OutstandingToken.objects.filter(user=user)
+    BlacklistedToken.objects.bulk_create(
+        (BlacklistedToken(token=token) for token in outstanding_tokens),
+        ignore_conflicts=True,
+    )

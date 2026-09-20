@@ -50,6 +50,17 @@ def custom_exception_handler(
     if isinstance(response.data, dict) and "detail" in response.data:
         message = str(response.data["detail"])
         details = None
+    elif (
+        isinstance(response.data, dict)
+        and "non_field_errors" in response.data
+        and isinstance(response.data["non_field_errors"], list)
+        and len(response.data["non_field_errors"]) == 1
+    ):
+        message = str(response.data["non_field_errors"][0])
+        details = None
+    elif isinstance(response.data, list) and len(response.data) == 1:
+        message = str(response.data[0])
+        details = None
     else:
         message = "Validation failed."
         details = response.data

@@ -62,3 +62,4 @@ def test_verify_email_with_an_invalid_token_is_rejected(
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.data["error"]["message"] == "Invalid or expired verification link."

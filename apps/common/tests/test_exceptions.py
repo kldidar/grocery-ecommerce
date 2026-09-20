@@ -47,3 +47,15 @@ def test_validation_error_end_to_end() -> None:
     response = APIClient().post("/api/v1/auth/token/", {})
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert "email" in response.data["error"]["details"]
+
+
+def test_handler_extracts_single_non_field_validation_error() -> None:
+
+    response = custom_exception_handler(
+        ValidationError({"non_field_errors": ["Invalid reset link."]}),
+        context={},
+    )
+
+    assert response is not None
+    assert response.data["error"]["message"] == "Invalid reset link."
+    assert response.data["error"]["details"] is None

@@ -67,3 +67,11 @@ Upload together with:
 - `01_System.md`, `02_Project.md`, `03_Roadmap.md`, `04_Constitution.md`,
   `05_Development_standards.md`
 - A fresh `project_dump.txt`
+
+## Audit in progress
+
+- Step 1 (inventory): ✅ done
+- Step 2 (roadmap reconciliation): ✅ done
+- Step 3 (config coherence): ✅ done
+- Step 4 (bugs, architecture, tests, security): 🔄 in progress
+- Steps 5–8: pending
