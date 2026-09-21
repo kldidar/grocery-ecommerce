@@ -85,13 +85,39 @@ would contradict the very principle that introduced this requirement in
 (next after Day 11 — Day 12), with the understanding that Day 10 remains
 an outstanding item in the queue, not a forgotten one.
 
----
+**Update (2026-09-21, full project audit):** `LoginEvent` (migration
+`0005`, generated 2026-09-09) was added after this ADR was written, so
+"the only model with meaningful queries is User" is no longer accurate —
+`LoginEvent` also has a real query pattern (`user.login_events.all()`,
+ordered by `-created_at`). This does not change the decision: a composite
+`(user_id, created_at)` index for that pattern is technically ready to
+add but has no measurable benefit at the current data volume, so it
+stays deferred by the same reasoning as the rest of Day 10.
+
+Concrete map, replacing the open-ended "return to it" phrasing above:
+- Redis/throttling infrastructure — already implemented and load-bearing
+  today (DRF throttle classes), not a future item.
+- `User`/`LoginEvent` access patterns — reviewed (see above); no action
+  needed at current scale.
+- Catalog indexes — Day 34.
+- Catalog caching — Day 37.
+- Cart/Order optimization — their own stages (around Day 55).
+- Production database connection strategy (persistent connections vs.
+  external pooling) — production-infrastructure stage; blocked on the
+  still-undecided WSGI vs. ASGI choice.
+- Anything else — only after real query patterns and measurements exist
+  for the domain in question (`measure → identify bottleneck → optimize
+  → measure again`).
+
+Day 10 remains **intentionally deferred, not closed.**
 
 ---
 
 ## ADR-005 — Stage 1 scope reduced to genuinely missing features
 
-**Date:** 2026-09-XX (день, когда было принято)
+**Date:** 2026-09-09 (inferred from migration `0005_loginevent`'s
+generation timestamp — the last schema change belonging to this
+mini-stage; correct if you recall the actual date differently)
 **Status:** Accepted
 
 **Context:** Stage 1 of the roadmap was planned as a full pass over
@@ -114,4 +140,103 @@ risk regressing already-working, tested functionality.
 
 **Consequences:** Stage 1 completes earlier than originally scoped.
 Freed sessions go to later stages. The roadmap's day count for Stage 1
-is not authoritative; the definition of "missing" is what matters.
+is not authoritative; the definition of "missing" is what matters. This
+also means roadmap Days 16 and 19 (password reset, login history) were
+delivered inside this mini-stage rather than as their own separate
+sessions — see `PROJECT_STATE.md`.
+
+---
+
+## ADR-006 — MAILERS over EMAIL_BACKEND (Django 6.1)
+
+**Date:** 2026-09-21
+**Status:** Accepted
+
+**Context:** Django 6.1 introduced a `MAILERS` setting — a named-dict
+configuration for one or more email backends, following the same pattern
+already used by `CACHES`, `DATABASES`, `STORAGES`, and `TASKS` —
+replacing the single `EMAIL_BACKEND` setting and the flat `EMAIL_*`
+settings, both deprecated as of 6.1 and scheduled for removal.
+`config/settings/base.py` and `production.py` already configure
+`MAILERS["default"]`, and `apps/notifications/tasks.py`'s use of
+`django.core.mail.send_mail()` resolves through `mailers.default`
+automatically once `MAILERS` is defined. This choice was made early in
+the project but never recorded, which made it indistinguishable from an
+oversight on review.
+
+**Decision:** Use `MAILERS` exclusively going forward; never fall back
+to `EMAIL_BACKEND` or the flat `EMAIL_*` settings.
+
+**Alternative:** Keep `EMAIL_BACKEND` — rejected: deprecated in the
+exact Django version this project targets (`django~=6.1`) and scheduled
+for removal.
+
+**Consequences:** Any third-party package that reads
+`settings.EMAIL_BACKEND` directly (rather than through Django's own
+mail-sending functions) will raise `AttributeError` once `MAILERS` is
+defined. Verify `MAILERS` compatibility before adding any such
+dependency (Constitution Rule 22).
+
+---
+
+## ADR-007 — Single error response shape across the API
+
+**Date:** 2026-09-21
+**Status:** Accepted
+
+**Context:** `apps/common/exceptions.py`'s `custom_exception_handler`
+normalizes every DRF error response to
+`{"error": {"code", "message", "details"}}`. Already used across the current API implementation across the whole API and documented in `README.md`, but never recorded
+as a deliberate decision compared against alternatives.
+
+**Decision:** Every error response uses
+`{"error": {"code": str, "message": str, "details": object | null}}` —
+`code` a stable, machine-readable identifier (`_STATUS_CODE_LABELS`),
+`message` a single human-readable string, `details` an optional
+structured payload (e.g. per-field validation errors).
+
+**Alternative:** DRF's own default shape (a bare `{"detail": ...}`, or a
+bare field-error dict) — rejected: the shape differs by error type
+(dict vs. list vs. string), which makes client-side error handling
+harder — exactly the class of bug found and fixed in Batch 1
+(2026-09-21) inside this same handler. RFC 7807 Problem Details —
+rejected as unnecessary ceremony for an API with a single client
+(FastKart) that has no need for `type`/`instance` URIs.
+
+**Consequences:** Any new exception type must produce a `response.data`
+shape the handler already recognizes (dict with `"detail"`, dict with a
+single-item `non_field_errors`-style key, list of one item, or a general
+dict/list of field errors) or extend the handler explicitly — see
+Batch 1 for the precedent.
+
+---
+
+## ADR-008 — UUID primary keys via UUIDMixin
+
+**Date:** 2026-09-21
+**Status:** Accepted
+
+**Context:** Every concrete model inherits `UUIDMixin` (directly or via
+`BaseModel`), giving it a UUID primary key instead of Django's default
+auto-incrementing integer. At the same time, every app's
+`AppConfig.default_auto_field` and the project-wide `DEFAULT_AUTO_FIELD`
+in `config/settings/base.py` are both `BigAutoField` — meaning that
+project-wide default is never actually used by any model defined in this
+codebase today, which reads as an inconsistency without this record.
+
+**Decision:** All first-party models use UUID primary keys via
+`UUIDMixin`/`BaseModel`. `DEFAULT_AUTO_FIELD` stays `BigAutoField` as the
+Django-recommended default for any model that does not explicitly opt
+into `UUIDMixin` — in particular, models added by future third-party
+packages, which Django creates using this project-wide default.
+
+**Alternative:** Django's default auto-incrementing integer PK —
+rejected: sequential IDs are guessable and leak information through the
+API, URLs, and logs (e.g. total user/order count, creation ordering);
+UUIDs avoid this and simplify client-generated IDs and any future
+multi-region data-merge scenario.
+
+**Consequences:** Slightly larger index/storage footprint than integer
+PKs — accepted, not significant at this project's scale. Any future
+third-party app's models default to `BigAutoField` unless explicitly
+given a UUID PK; this is intended behavior, not an inconsistency to fix.
